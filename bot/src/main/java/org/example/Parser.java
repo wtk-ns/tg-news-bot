@@ -6,20 +6,20 @@ import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Parser {
     private String FEED;
-    private List<SyndEntry> newsList = new ArrayList<>();
+    private Calendar calendar = new GregorianCalendar();
 
-    public Parser(String FEED) {
+    public Parser(String FEED, Calendar news) {
         this.FEED = FEED;
+        this.calendar.setTimeInMillis(news.getTimeInMillis());
     }
 
 
     public List<SyndEntry> parse() throws Exception{
-        newsList = this.printRss(createFeed(FEED));
+        List<SyndEntry> newsList = this.printRss(createFeed(FEED));
         return newsList;
     }
 
@@ -29,13 +29,51 @@ public class Parser {
     }
 
     private List<SyndEntry> printRss(SyndFeed feed){
+
         List<SyndEntry> list = new ArrayList<>();
-
-
         for (SyndEntry entry : feed.getEntries())
         {
-            list.add(entry);
+            if (entry.getPublishedDate().after(calendar.getTime())) {
+                shortLink(entry);
+                list.add(entry);
+            }
         }
+
+        sort(list);
         return list;
+    }
+
+
+    private void shortLink(SyndEntry entry)
+    {
+        if (entry.getLink().contains("vc.ru"))
+        {
+            String temp = entry.getLink();
+            entry.setLink(temp.substring(0, (temp.lastIndexOf("/")+7)));
+        }  else if (entry.getLink().contains("journal.tinkoff.ru"))
+        {
+            String temp = entry.getLink();
+            entry.setLink(temp.substring(0, (temp.lastIndexOf("/")+1)));
+        }
+    }
+
+    private void sort(List<SyndEntry> list)
+    {
+
+        Comparator<SyndEntry> comparator = new Comparator<SyndEntry>() {
+            @Override
+            public int compare(SyndEntry o1, SyndEntry o2) {
+                if (o1.getPublishedDate().before(o2.getPublishedDate()))
+                {
+                    return -1;
+                } else if (o1.getPublishedDate().after(o2.getPublishedDate())) {
+                    return 1;
+                } else return 0;
+
+            }
+        };
+
+        list.sort(comparator);
+
     }
 }

@@ -2,208 +2,216 @@ package org.example;
 
 
 import com.rometools.rome.feed.synd.SyndEntry;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import javax.swing.text.html.HTML;
+import java.lang.ref.SoftReference;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private Logger log = Logger.getLogger(Bot.class.getName());
-
-    private String name = "newswtcnsbot";
-    private String token = "1816599655:AAHJqlQkuPBypLC-3tn_jVdfKQT9cSR7esg";
+    private String NAME, TOKEN;
+    private Long chatID;
+    private SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+    private SimpleDateFormat df2 = new SimpleDateFormat("HH:mm, dd MMMM");
+    private List<SyndEntry> listVC = new ArrayList<>();
     private List<String> listOfResources = new ArrayList<>();
-    private static SimpleDateFormat df = new SimpleDateFormat("HH:mm");
-
-    public Long chatID;
-    public List<SyndEntry> currentVCnews;
-    public List<SyndEntry> currentTJnews;
-    public List<SyndEntry> currentKODnews;
 
 
 
+    public Calendar forInstantNews = new GregorianCalendar();
 
-    public Bot(){
+
+    protected Bot(String NAME, String TOKEN) {
+        this.NAME = NAME;
+        this.TOKEN = TOKEN;
         listOfResources.add("VC");
         listOfResources.add("TJ");
         listOfResources.add("KOD");
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
-        if(update.hasCallbackQuery()){
-            callBackHandler(update.getCallbackQuery());
-        } else {
-            commandHandler(msgHandler(update.getMessage().getText()), update.getMessage().getChatId());
-            chatID = update.getMessage().getChatId();
-
-        }
+    public String getBotUsername() {
+        return NAME;
     }
 
-    private void callBackHandler(CallbackQuery callBack)
-    {
-        String data = callBack.getData();
-        EditMessageText editMessageText = new EditMessageText();
+    @Override
+    public String getBotToken() {
+        return TOKEN;
+    }
 
-        editMessageText.setChatId(callBack.getMessage().getChatId());
-        editMessageText.setMessageId(callBack.getMessage().getMessageId());
-        editMessageText.setText(msgSwitcher(listOfResources.indexOf(data), callBack.getMessage().getChatId()));
-        editMessageText.setReplyMarkup(makeMarkup());
+    @Override
+    public void onUpdateReceived(Update update) {
+        //тут 4 варика - старт, хелп, нювс и нонкоманд
+        //если чел нажал старт - вывести сообщение, во сколько новости появляются и за какой период времени
+        //вывести инстант ньювс
+        if (!update.hasCallbackQuery()) {
+            commandHandler(update);
+        } else {
+            callBackHandler(update.getCallbackQuery());
+
+        }
+
+
+    }
+
+    private void callBackHandler(CallbackQuery callbackQuery)
+    {
+
+        EditMessageText em = new EditMessageText();
+        em.setChatId(callbackQuery.getMessage().getChatId());
+        em.setMessageId(callbackQuery.getMessage().getMessageId());
+        em.disableWebPagePreview();
+        em.setReplyMarkup(makemurkup());
+
+
+
+        if (callbackQuery.getData().equals("TJ"))
+        {
+            em.setText(parseNews("https://journal.tinkoff.ru/feed/", forInstantNews));
+
+        } else if (callbackQuery.getData().equals("KOD")) {
+            em.setText(parseNews("https://kod.ru/rss/", forInstantNews));
+        } else
+        {
+            em.setText(parseNews("https://vc.ru/rss", forInstantNews));
+        }
 
         try {
-            execute(editMessageText);
-        } catch (Exception e)
-        {
-            System.out.println("Calback" + e);
+            execute(em);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
-
-
 
     }
 
-    private String msgSwitcher(Integer index, Long chatId)
-    {
-        String msg = "";
-        switch (index)
-        {
+    private void commandHandler (Update upd){
+        Long ID = upd.getMessage().getChatId();
+        String command = upd.getMessage().getText();
 
-            case 0:
-                msg = formBlock(currentVCnews);
-                break;
-            case 1:
-                msg = formBlock(currentTJnews);;
-                break;
-            case 2:
-                msg = formBlock(currentKODnews);
-                break;
-            default:
-                sendMsg(chatId,"Sorry, something get wrong with inline. Please , contact @wotkins", false);
-                break;
+
+        if (command.equals("/start")) {
+            if (chatID == null) {
+                Date date = new Date();
+
+                NewsSender newsSender = new NewsSender(date, this, ID);
+                Thread newsThread = new Thread(newsSender);
+                chatID = ID;
+                newsThread.start();
+            } else {
+                sendMsg(chatID, "You are already subscribed.\nIf u have prblms - reload bot by recreating chat", false);
+            }
+        } else if (command.equals("/news")) {
+            if (chatID != null) {
+                sendMsg(chatID, parseNews("https://vc.ru/rss",forInstantNews), true);
+
+            } else {
+
+            }
 
         }
 
-        return msg;
     }
 
-    private String formBlock(List<SyndEntry> list)
+    public String parseNews(String FEED, Calendar newsFromPoint)
     {
-        String text = "";
-        for (SyndEntry a: list)
+        Parser parser = new Parser(FEED, newsFromPoint);
+
+        try {
+            listVC = parser.parse();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String text = "Новости с " + df2.format(newsFromPoint.getTime()) + "\n\n";
+        for (SyndEntry a: listVC)
         {
             text += df.format(a.getPublishedDate()) + " " + a.getTitle() + "\n" + a.getLink() + "\n\n";
         }
         return text;
     }
 
-    // ""
-    // "help"
-    // "hey"
-    // "news"
-    public String msgHandler(String msg){
-        if (msg.equals("/help"))
-        {
-            return "help";
-        } else if (msg.equals("/news"))
-        {
-            return "news";
-        } else if (msg.equals("/start"))
-        {
-            return "start";
-        }
-        return "";
+
+
+    /*
+     при вводе команды старт - определить сколько времени
+     обнулить секунды, минуты и взять день и месяц
+
+     определить в каком временном промежутке находимся: 00-8, 8 - 14, 14 - 20, 20 - 00,
+                                                           0    1       2       3
+     всего временных промежутков 4
+     принять за  точку отсчета ближайшее большее время
+     отправить поток на сон до нее
+
+
+     найти в каком временном промежутке мы находимся
+     */
+
+    @Override
+    public void onUpdatesReceived(List<Update> updates) {
+        super.onUpdatesReceived(updates);
     }
 
-    public void commandHandler(String command, Long chatId)
+    public void sendMsg(Long chatID, String text, boolean haveInline)
     {
-        if (command.equals("help")){
-
-            sendMsg(chatId, "Two standard news blocks. Standard news block according to the bot start time & bot start time + 12. " + "\n" +
-                    "Instant news - news between standard news period." + "\n\n" + "Bot start time: " + NewsCollector.botStart , false);
-
-        } else if (command.equals("news")) {
-            try {
-                //Thread.sleep(100);
-                sendMsg(chatID, formBlock(currentVCnews),true);
-            } catch (Exception e)
-            {            }
-
-        } else if (command.equals("start")){
-            try {
-                sendMsg(chatID, "At first time you need to wait about a minute",false);
-                Thread.sleep(6000);
-                sendMsg(chatID, formBlock(NewsCollector.vcList),true);
-            } catch (Exception e)
-            {            }
-
-        }else {
-            sendMsg(chatId,"/help, /news", false);
-        }
-    }
 
 
+        SendMessage sm = new SendMessage();
+        sm.setChatId(chatID);
+        sm.setText(text);
+        sm.disableWebPagePreview();
 
-
-    public void sendMsg(Long chatID, String text, Boolean hasKeyboard) {
-
-        SendMessage msg = new SendMessage();
-        msg.setText(text);
-        msg.setChatId(chatID);
-
-        if (hasKeyboard) {
-            msg.setReplyMarkup(makeMarkup());
+        if (haveInline)
+        {
+            sm.setReplyMarkup(makemurkup());
         }
 
         try {
-            execute(msg);
-        } catch (Exception e) {
-            System.out.println(e);
-
+            execute(sm);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
     }
 
-
-    private InlineKeyboardMarkup makeMarkup()
-    {
-
-
+    private InlineKeyboardMarkup makemurkup(){
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<InlineKeyboardButton> row = new ArrayList<>();
 
-        List<List<InlineKeyboardButton>> markupParam = new ArrayList<>();
-        List<InlineKeyboardButton> markupRow = new ArrayList<>();
+        InlineKeyboardButton VCbutton = new InlineKeyboardButton();
+        VCbutton.setText("VC");
+        VCbutton.setCallbackData("VC");
+        row.add(VCbutton);
 
-        for (String a : listOfResources) {
-            InlineKeyboardButton button = new InlineKeyboardButton();
-            button.setText(a);
-            button.setCallbackData(a);
-            markupRow.add(button);
-        }
+        InlineKeyboardButton TJbutton = new InlineKeyboardButton();
+        TJbutton.setText("TJ");
+        TJbutton.setCallbackData("TJ");
+        row.add(TJbutton);
 
-        markupParam.add(markupRow);
-        markup.setKeyboard(markupParam);
+        InlineKeyboardButton KODbutton = new InlineKeyboardButton();
+        KODbutton.setText("KOD");
+        KODbutton.setCallbackData("KOD");
+        row.add(KODbutton);
 
+        List<List<InlineKeyboardButton>> forMarkup = new ArrayList<>();
+        forMarkup.add(row);
+        markup.setKeyboard(forMarkup);
 
         return markup;
-    }
-
-
-    @Override
-    public String getBotUsername() {
-        return name;
-    }
-
-    @Override
-    public String getBotToken() {
-        return token;
 
     }
+
+
 
 
 
