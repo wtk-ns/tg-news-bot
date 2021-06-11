@@ -27,7 +27,7 @@ public class MailingThread implements Runnable{
                 getNews(12);
             } else if (LocalTime.now(bot.zone).getHour() == 14 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
                 getNews(6);
-            } else if (LocalTime.now(bot.zone).getHour() == 18 && LocalTime.now(bot.zone).getMinute() == 47 && LocalTime.now(bot.zone).getSecond() == 0){
+            } else if (LocalTime.now(bot.zone).getHour() == 20 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
                 getNews(12);
             }
 
