@@ -1,6 +1,10 @@
 package org.example;
 
+import org.telegram.telegrambots.meta.api.objects.User;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -19,14 +23,14 @@ public class MailingThread implements Runnable{
         while (true){
 
 
-            if (LocalTime.now().getHour() == 8 && LocalTime.now().getMinute() == 0 && LocalTime.now().getSecond() == 0){
+            if (LocalTime.now(bot.zone).getHour() == 8 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
                 getNews(12);
-            } else if (LocalTime.now().getHour() == 14 && LocalTime.now().getMinute() == 0 && LocalTime.now().getSecond() == 0){
+            } else if (LocalTime.now(bot.zone).getHour() == 14 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
                 getNews(6);
-            } else if (LocalTime.now().getHour() == 20 && LocalTime.now().getMinute() == 0 && LocalTime.now().getSecond() == 0){
-                System.out.println("true");
+            } else if (LocalTime.now(bot.zone).getHour() == 18 && LocalTime.now(bot.zone).getMinute() == 47 && LocalTime.now(bot.zone).getSecond() == 0){
                 getNews(12);
             }
+
 
             try {
                 Thread.sleep(1000);
@@ -39,11 +43,11 @@ public class MailingThread implements Runnable{
     }
 
     private void getNews(int ammountHours){
-        Calendar newsAfter = new GregorianCalendar();
-        newsAfter.add(Calendar.HOUR_OF_DAY,-ammountHours);
-        Parser parser = new Parser(newsAfter);
+
+        Parser parser = bot.makeParser(-ammountHours);
+
         try {
-            bot.mailingForAllSubs(parser.parse(bot.getRssFromList(0)),ammountHours);
+            bot.mailingForAllSubs(parser.parse(bot.getRssFromList(0)));
         } catch (Exception exception) {
             exception.printStackTrace();
         }

@@ -25,8 +25,7 @@ public class App
 
         } catch (Exception exception)
         {
-            System.out.println("Main");
-
+            System.out.println("Error in Main");
             exception.printStackTrace();
 
         }
