@@ -10,9 +10,7 @@ import java.util.logging.Logger;
 public class App
 {
 
-    private final static String bot_name = "ultrasecretbot";
-    private final static String bot_token = "1892433428:AAGcY5vDIFdi37SazDSxB7_s9iBcTwQ5o2k";
-
+    private static final Map<String, String> getenv = System.getenv();
 
     public static void main( String[] args ) {
 
@@ -21,7 +19,7 @@ public class App
 
         try {
 
-            api.registerBot(new Bot(bot_name,bot_token));
+            api.registerBot(new Bot(getenv.get("BOT_NAME"), getenv.get("BOT_TOKEN")));
 
         } catch (Exception exception)
         {

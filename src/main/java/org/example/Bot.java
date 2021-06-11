@@ -3,6 +3,7 @@ package org.example;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -23,9 +24,13 @@ public class Bot extends TelegramLongPollingBot {
     private final String BOT_TOKEN;
     private final List<String> markupButtons = Arrays.asList("VC","TJ","KOD");
     private final List<Long> subscribers = new ArrayList<>();
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("E, H:mm");
     private final List<String> rssFeedList = Arrays.asList("https://vc.ru/rss", "https://journal.tinkoff.ru/feed/", "https://kod.ru/rss/");
+    private Boolean settingsLisner = false;
+    private Integer amountOfHoursForNewsParsing = 12;
+
     public final ZoneId zone;
+
 
 
 
@@ -63,8 +68,11 @@ public class Bot extends TelegramLongPollingBot {
         if (update.hasCallbackQuery())
         {
             handleCallback(update.getCallbackQuery());
-        } else {
+        } else if (!settingsLisner){
             handleMessage(update.getMessage());
+        } else {
+            setupApp(update.getMessage());
+            settingsLisner = false;
         }
 
     }
@@ -77,7 +85,7 @@ public class Bot extends TelegramLongPollingBot {
 
         switch (command.getText()){
             case "/start":
-                startAction(command.getChatId(), command.getDate());
+                startAction(command.getChatId());
                 break;
             case "/help":
                 helpAction(command.getChatId());
@@ -85,10 +93,32 @@ public class Bot extends TelegramLongPollingBot {
             case "/news":
                 newsAction(command.getChatId());
                 break;
+            case "/settings":
+                settingsAction(command.getChatId());
+                break;
             default:
                 noncommandAction(command.getChatId());
                 break;
         }
+    }
+
+    private void setupApp(Message settings){
+
+
+        Integer temp = 0;
+        try {
+            temp = Integer.parseInt(settings.getText());
+            if (temp>=1 && temp<=12){
+                amountOfHoursForNewsParsing = temp;
+                sendMessage(settings.getChatId(), "Settings applied successfully",false);
+            } else {
+                sendMessage(settings.getChatId(), "Incorrect interval\n/settings again", false);
+            }
+        } catch (Exception e){
+            sendMessage(settings.getChatId(), "Incorrect format\n/settings again", false);
+        }
+
+
     }
 
     /*
@@ -97,26 +127,26 @@ public class Bot extends TelegramLongPollingBot {
 
     private void handleCallback(CallbackQuery callbackQuery){
 
-        Parser parser = makeParser(-12);
+        Parser parser = makeParser(-amountOfHoursForNewsParsing);
 
         switch (callbackQuery.getData()){
             case "VC":
                 try {
-                    editMessage(callbackQuery.getMessage(), "VC\n"+ makeTextFormList(parser.parse(rssFeedList.get(0))), true);
+                    editMessage(callbackQuery.getMessage(), makeTextFormList(parser.parse(rssFeedList.get(0))), true);
                 } catch (Exception exception) {
                     exception.printStackTrace();
                 }
                 break;
             case "TJ":
                 try {
-                    editMessage(callbackQuery.getMessage(), "TJ\n"+ makeTextFormList(parser.parse(rssFeedList.get(1))), true);
+                    editMessage(callbackQuery.getMessage(), makeTextFormList(parser.parse(rssFeedList.get(1))), true);
                 } catch (Exception exception) {
                     exception.printStackTrace();
                 }
                 break;
             case "KOD":
                 try {
-                    editMessage(callbackQuery.getMessage(), "KOD\n"+ makeTextFormList(parser.parse(rssFeedList.get(2))), true);
+                    editMessage(callbackQuery.getMessage(), makeTextFormList(parser.parse(rssFeedList.get(2))), true);
                 } catch (Exception exception) {
                     exception.printStackTrace();
                 }
@@ -124,6 +154,20 @@ public class Bot extends TelegramLongPollingBot {
             default:
                 System.out.println("Error with callBackQuerry interpretation. handleCallback method");
         }
+    }
+    /*
+    Действие при вводе комманды /settings. Если человек подписан, то включается settingsListner в методе onUpdateRecieved
+    Следующим сообщением вводятся настройки (количество часов, за которые парсим новости)
+     */
+
+    private void settingsAction(Long chatID){
+        if (!subscribers.contains(chatID)){
+            sendMessage(chatID, "You need /start before getting access to settings", false);
+        } else {
+            settingsLisner = true;
+            sendMessage(chatID, "Ok, enter the number of hours for which the news will be displayed (1-12)\nDefault value: 12", false);
+        }
+
     }
 
     /*
@@ -142,6 +186,7 @@ public class Bot extends TelegramLongPollingBot {
         editedMessage.setChatId(message.getChatId());
         editedMessage.setText(newText);
         editedMessage.disableWebPagePreview();
+        editedMessage.setParseMode(ParseMode.HTML);
 
         if (hasInlines){
             editedMessage.setReplyMarkup(makeInlineMarkup());
@@ -150,8 +195,8 @@ public class Bot extends TelegramLongPollingBot {
         try {
             execute(editedMessage);
         } catch (TelegramApiException exception){
-            System.out.println(exception.getMessage());
-            System.out.println("editMessage");
+            //System.out.println(exception.getMessage());
+            //System.out.println("editMessage");
         }
 
     }
@@ -163,13 +208,11 @@ public class Bot extends TelegramLongPollingBot {
     @param msgDate - дата отправки сообщения с командой /start (UNIX)
      */
 
-    private void startAction(Long chatID, Integer msgDate){
+    private void startAction(Long chatID){
 
         if (!subscribers.contains(chatID)) {
             subscribers.add(chatID);
-
             sendMessage(chatID, "Congrats! You are now subscriber", false);
-
         } else {
             sendMessage(chatID, "You are already subscribed.\n/news - for instant news", false);
         }
@@ -183,10 +226,7 @@ public class Bot extends TelegramLongPollingBot {
      */
     private void newsAction(Long chatID){
         if (subscribers.contains(chatID)) {
-
-            Parser parser = makeParser(-12);
-
-
+            Parser parser = makeParser(-amountOfHoursForNewsParsing);
             try {
                 sendMessage(chatID, makeTextFormList(parser.parse(rssFeedList.get(0))), true);
             } catch (Exception exception) {
@@ -198,6 +238,13 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
+
+    /*
+    Создает объект класса парсер, в который передается календарь, содержащий дату и время, С КОТОРОГО
+    будут парсится новости (т.е. парсятся все новости, которые позже calendar)
+
+    @param amountOfHoursBefore - количество часов, за которые парсятся новости
+     */
     public Parser makeParser(int amountOfHoursBefore){
         Calendar calendar = new GregorianCalendar();
         calendar.setTimeZone(TimeZone.getTimeZone(zone));
@@ -217,7 +264,7 @@ public class Bot extends TelegramLongPollingBot {
 
     public void mailingForAllSubs(List<SyndEntry> feedNewsList){
         for (Long chatID : subscribers){
-            sendMessage(chatID, "VC:\n\n" + makeTextFormList(feedNewsList), true);
+            sendMessage(chatID, makeTextFormList(feedNewsList), true);
         }
     }
 
@@ -231,9 +278,13 @@ public class Bot extends TelegramLongPollingBot {
 
         StringBuilder returnedString = new StringBuilder();
 
+
         for (SyndEntry syndEntry : list){
-            returnedString.append(dateFormat.format(syndEntry.getPublishedDate()) + " " + syndEntry.getTitle() + "\n" + syndEntry.getLink() + "\n\n");
+            returnedString.append(dateFormat.format(syndEntry.getPublishedDate()) + "\n<b>" + syndEntry.getTitle() + "</b>\n" +
+                     "<a href=\"" + syndEntry.getLink() + "\">"+ "в источник"  + "</a>\n\n");
+
         }
+
 
         return returnedString.toString();
     }
@@ -253,6 +304,7 @@ public class Bot extends TelegramLongPollingBot {
         sendMessage.setChatId(chatID);
         sendMessage.setText(messageText);
         sendMessage.disableWebPagePreview();
+        sendMessage.setParseMode(ParseMode.HTML);
 
         if (hasInlines)
         {
@@ -302,11 +354,11 @@ public class Bot extends TelegramLongPollingBot {
         if (subscribers.contains(chatID))
         {
 
-            String subList = "Current subs:\n\n";
+            String subList = "Current subs (ID):\n\n";
             for (Long id : subscribers){
                 subList += id + "\n";
             }
-            sendMessage(chatID, subList, false);
+            sendMessage(chatID, "/news - for instant news\n/settings - for settings\n\n" + subList, false);
 
         } else {
             sendMessage(chatID,"Please /start to subscribe",false);
@@ -323,7 +375,7 @@ public class Bot extends TelegramLongPollingBot {
 
         if (subscribers.contains(chatId)){
             sendMessage(chatId, "Try to use:\n/start - to subscribe\n/news - to get instant news" +
-                    "\n/help - for help", false);
+                    "\n/help - for help\n/settings - for settings", false);
         } else {
             sendMessage(chatId, "Please /start to subscribe", false);
         }
@@ -335,6 +387,9 @@ public class Bot extends TelegramLongPollingBot {
         return rssFeedList.get(index);
     }
 
+    public Integer getAmmountOfHoursForNewsParsing(){
+        return amountOfHoursForNewsParsing;
+    }
 
 
 

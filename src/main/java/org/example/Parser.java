@@ -43,7 +43,9 @@ public class Parser {
                 list.add(entry);
             }
         }
+
         return sort(list);
+
     }
 
 
@@ -63,16 +65,20 @@ public class Parser {
     private List<SyndEntry> sort(List<SyndEntry> list)
     {
 
+
         Comparator<SyndEntry> comparator = (o1, o2) -> {
-            if (o1.getPublishedDate().before(o2.getPublishedDate()))
+            if (o1.getPublishedDate().after(o2.getPublishedDate()))
             {
                 return -1;
-            } else if (o1.getPublishedDate().after(o2.getPublishedDate())) {
+            } else if (o1.getPublishedDate().before(o2.getPublishedDate())) {
                 return 1;
             } else return 0;
 
         };
         list.sort(comparator);
+
+
+
         return  list;
     }
 

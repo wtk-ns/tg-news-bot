@@ -24,11 +24,11 @@ public class MailingThread implements Runnable{
 
 
             if (LocalTime.now(bot.zone).getHour() == 8 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
-                getNews(12);
+                getNews(bot.getAmmountOfHoursForNewsParsing());
             } else if (LocalTime.now(bot.zone).getHour() == 14 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
-                getNews(6);
+                getNews(bot.getAmmountOfHoursForNewsParsing());
             } else if (LocalTime.now(bot.zone).getHour() == 20 && LocalTime.now(bot.zone).getMinute() == 0 && LocalTime.now(bot.zone).getSecond() == 0){
-                getNews(12);
+                getNews(bot.getAmmountOfHoursForNewsParsing());
             }
 
 
