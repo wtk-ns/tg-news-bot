@@ -23,7 +23,7 @@ public class Bot extends TelegramLongPollingBot {
     private final String BOT_NAME;
     private final String BOT_TOKEN;
     private final List<String> markupButtons = Arrays.asList("VC","TJ","KOD");
-    private final List<Long> subscribers = new ArrayList<>();
+    public final List<Long> subscribers = new ArrayList<>();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("E, H:mm");
     private final List<String> rssFeedList = Arrays.asList("https://vc.ru/rss", "https://journal.tinkoff.ru/feed/", "https://kod.ru/rss/");
     private Boolean settingsLisner = false;
@@ -39,7 +39,6 @@ public class Bot extends TelegramLongPollingBot {
         this.BOT_TOKEN=BOT_TOKEN;
         zone = ZoneId.of("Europe/Moscow");
         mailingThreadStart();
-
     }
 
     /*
@@ -165,7 +164,7 @@ public class Bot extends TelegramLongPollingBot {
             sendMessage(chatID, "You need /start before getting access to settings", false);
         } else {
             settingsLisner = true;
-            sendMessage(chatID, "Ok, enter the number of hours for which the news will be displayed (1-24)\nDefault value: 12", false);
+            sendMessage(chatID, "Ok, enter the number of hours, for which the INSTANT news will be displayed (1-24)\nDefault value: 12", false);
         }
 
     }
@@ -271,6 +270,8 @@ public class Bot extends TelegramLongPollingBot {
      */
 
     public void mailingForAllSubs(List<SyndEntry> feedNewsList){
+
+
         for (Long chatID : subscribers){
             sendMessage(chatID, makeTextFormList(feedNewsList), true);
         }
@@ -297,8 +298,7 @@ public class Bot extends TelegramLongPollingBot {
 
         } else {
 
-            returnedString.append("К сожалению, за последние " + getAmmountOfHoursForNewsParsing() + " часов новостей по этому ресурсу нет :(\n" +
-                    "Но в /settings можно изменить интервал парса на бОльший");
+            returnedString.append("К сожалению, за последний настроенный промежуток новостей по этому ресурсу нет :(\n");
         }
 
 
@@ -379,10 +379,11 @@ public class Bot extends TelegramLongPollingBot {
         {
 
             String subList = "Current subs (ID):\n\n";
+
             for (Long id : subscribers){
                 subList += id + "\n";
             }
-            sendMessage(chatID, "/news - for instant news\n/settings - for settings\n\n" + subList, false);
+            sendMessage(chatID, "/news - for instant news\n\n" + subList, false);
 
         } else {
             sendMessage(chatID,"Please /start to subscribe",false);
@@ -399,7 +400,7 @@ public class Bot extends TelegramLongPollingBot {
 
         if (subscribers.contains(chatId)){
             sendMessage(chatId, "Try to use:\n/start - to subscribe\n/news - to get instant news" +
-                    "\n/help - for help\n/settings - for settings", false);
+                    "\n/help - for help", false);
         } else {
             sendMessage(chatId, "Please /start to subscribe", false);
         }

@@ -1,12 +1,8 @@
 package org.example;
 
-import org.telegram.telegrambots.meta.api.objects.User;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+
 
 public class MailingThread implements Runnable{
 
