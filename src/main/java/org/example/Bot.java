@@ -108,7 +108,7 @@ public class Bot extends TelegramLongPollingBot {
         Integer temp = 0;
         try {
             temp = Integer.parseInt(settings.getText());
-            if (temp>=1 && temp<=12){
+            if (temp>=1 && temp<=24){
                 amountOfHoursForNewsParsing = temp;
                 sendMessage(settings.getChatId(), "Settings applied successfully",false);
             } else {
@@ -165,7 +165,7 @@ public class Bot extends TelegramLongPollingBot {
             sendMessage(chatID, "You need /start before getting access to settings", false);
         } else {
             settingsLisner = true;
-            sendMessage(chatID, "Ok, enter the number of hours for which the news will be displayed (1-12)\nDefault value: 12", false);
+            sendMessage(chatID, "Ok, enter the number of hours for which the news will be displayed (1-24)\nDefault value: 12", false);
         }
 
     }
@@ -192,11 +192,19 @@ public class Bot extends TelegramLongPollingBot {
             editedMessage.setReplyMarkup(makeInlineMarkup());
         }
 
-        try {
-            execute(editedMessage);
-        } catch (TelegramApiException exception){
-            //System.out.println(exception.getMessage());
-            //System.out.println("editMessage");
+        if (newText.length()>4096){
+            Integer tempLength = newText.length();
+            sendMessage(message.getChatId(),newText.substring(0, 4096),false);
+            sendMessage(message.getChatId(),newText.substring(4096, tempLength),true);
+
+        } else {
+
+            try {
+                execute(editedMessage);
+            } catch (TelegramApiException exception) {
+                //System.out.println(exception.getMessage());
+                //System.out.println("editMessage");
+            }
         }
 
     }
@@ -279,10 +287,18 @@ public class Bot extends TelegramLongPollingBot {
         StringBuilder returnedString = new StringBuilder();
 
 
-        for (SyndEntry syndEntry : list){
-            returnedString.append(dateFormat.format(syndEntry.getPublishedDate()) + "\n<b>" + syndEntry.getTitle() + "</b>\n" +
-                     "<a href=\"" + syndEntry.getLink() + "\">"+ "в источник"  + "</a>\n\n");
+        if (list.size()!=0) {
 
+            for (SyndEntry syndEntry : list) {
+                returnedString.append(dateFormat.format(syndEntry.getPublishedDate()) + "\n<b>" + syndEntry.getTitle() + "</b>\n" +
+                        "<a href=\"" + syndEntry.getLink() + "\">" + "в источник" + "</a>\n\n");
+
+            }
+
+        } else {
+
+            returnedString.append("К сожалению, за последние " + getAmmountOfHoursForNewsParsing() + " часов новостей по этому ресурсу нет :(\n" +
+                    "Но в /settings можно изменить интервал парса на бОльший");
         }
 
 
@@ -311,11 +327,19 @@ public class Bot extends TelegramLongPollingBot {
             sendMessage.setReplyMarkup(makeInlineMarkup());
         }
 
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException exception){
-            System.out.println(exception.getMessage());
-            System.out.println("sendMessage");
+        if (messageText.length()>4096){
+            Integer tempLength = messageText.length();
+            sendMessage(chatID,messageText.substring(0, 4096),false);
+            sendMessage(chatID,messageText.substring(4096, tempLength),true);
+
+        } else {
+
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException exception) {
+                System.out.println(exception.getMessage());
+                System.out.println("sendMessage");
+            }
         }
     }
 
