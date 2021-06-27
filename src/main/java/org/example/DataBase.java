@@ -29,7 +29,7 @@ public class DataBase {
         try {
             if (!hasInSubscriberTable(subscriber)) {
                 subscribers.add(subscriber);
-                prepareStatement("INSERT INTO subscribers VALUES (" + subscriber.getChatID() + ", "
+                createStatement().executeQuery("INSERT INTO subscribers VALUES (" + subscriber.getChatID() + ", "
                         + subscriber.getParseGap() + ");");
                 System.out.println("Insert done");
             } else {
@@ -41,9 +41,12 @@ public class DataBase {
     }
 
     public static void deleteSubscriber(Subscriber subscriber){
-
-        subscribers.remove(subscriber);
-        prepareStatement("DELETE FROM subscribers WHERE chatid=" + subscriber.getChatID() + ";");
+        try {
+            subscribers.remove(subscriber);
+            createStatement().executeQuery("DELETE FROM subscribers WHERE chatid=" + subscriber.getChatID() + ";");
+        } catch (SQLException throwables) {
+            makeExceptionInfo("Deleted", throwables);
+        }
 
     }
 
@@ -75,7 +78,11 @@ public class DataBase {
     public static void insertNewSettings(Integer settings, Subscriber subscriber){
 
 
-        prepareStatement("UPDATE subscribers SET settings=" + settings + " WHERE chatid=" + subscriber.getChatID());
+        try {
+            createStatement().executeQuery("UPDATE subscribers SET settings=" + settings + " WHERE chatid=" + subscriber.getChatID());
+        } catch (SQLException throwables) {
+            makeExceptionInfo("Insert settings done", throwables);
+        }
 
     }
 
@@ -112,13 +119,6 @@ public class DataBase {
         return DriverManager.getConnection(Objects.requireNonNull(Constants.getDBurl()), Constants.getPropertiesForDB()).createStatement();
     }
 
-    private static void prepareStatement(String sql){
-        try {
-            PreparedStatement ps = DriverManager.getConnection(Objects.requireNonNull(Constants.getDBurl()), Constants.getPropertiesForDB()).prepareStatement(sql);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
 
     public static void sql(String text){
 
