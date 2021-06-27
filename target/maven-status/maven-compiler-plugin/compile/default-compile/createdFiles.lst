@@ -1,0 +1,8 @@
+org\example\Bot.class
+org\example\Parser.class
+org\example\Subscriber.class
+org\example\DataBase.class
+org\example\MailingThread.class
+org\example\Constants.class
+org\example\Journals.class
+org\example\App.class

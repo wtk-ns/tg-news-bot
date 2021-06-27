@@ -93,6 +93,7 @@
                     <artifactId>heroku-maven-plugin</artifactId>
                     <version>3.0.3</version>
                     <configuration>
+                        <appName>wotkins-bot</appName>
                         <jdkVersion>14.0.2</jdkVersion>
                         <processTypes>
                             <worker>java $JAVA_OPTS -cp target/classes:target/dependency/* org.example.App</worker>
