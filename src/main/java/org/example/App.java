@@ -17,9 +17,9 @@ public class App
         TelegramBotsApi api = new TelegramBotsApi();
 
         //DataBase.sql("CREATE TABLE subscribers (chatid bigint UNIQUE, settings int);");
-        //DataBase.sql("DELETE FROM subscribers");
+        DataBase.sql("DELETE FROM subscribers");
 
-
+/*
         try {
             api.registerBot(new Bot());
         } catch (TelegramApiRequestException exception)
@@ -29,7 +29,7 @@ public class App
 
 
 
-
+*/
 
     }
 

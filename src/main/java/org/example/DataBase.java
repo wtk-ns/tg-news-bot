@@ -3,6 +3,7 @@ package org.example;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class DataBase {
@@ -106,12 +107,12 @@ public class DataBase {
     }
 
     private static Statement createStatement() throws SQLException {
-        return DriverManager.getConnection(Constants.dateBaseURL, Constants.getPropertiesForDB()).createStatement();
+        return DriverManager.getConnection(Objects.requireNonNull(Constants.getDBurl()), Constants.getPropertiesForDB()).createStatement();
     }
 
     private static void prepareStatement(String sql){
         try {
-            PreparedStatement ps = DriverManager.getConnection(Constants.dateBaseURL, Constants.getPropertiesForDB()).prepareStatement(sql);
+            PreparedStatement ps = DriverManager.getConnection(Objects.requireNonNull(Constants.getDBurl()), Constants.getPropertiesForDB()).prepareStatement(sql);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
