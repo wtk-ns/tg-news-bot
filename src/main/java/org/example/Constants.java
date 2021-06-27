@@ -15,7 +15,7 @@ public final class Constants {
     public static final Integer minimumParseTime = 1;
     public static final Integer maximumParseTime = 24;
     //public static final String dateBaseURL = "jdbc:postgresql://ec2-3-89-0-52.compute-1.amazonaws.com:5432/da8es7ot1po1tm";
-
+//jdbc:postgresql://ec2-3-89-0-52.compute-1.amazonaws.com:5432/da8es7ot1po1tm?sslmode=require:zoxueogowfudvx:283491e761cc1714870af77a2ad6d52cdcbc2992e34873f028a12bb73b7b0816
     //private static final String user = "zoxueogowfudvx";
     //private static final String password = "283491e761cc1714870af77a2ad6d52cdcbc2992e34873f028a12bb73b7b0816";
     private static URI dbURi = null;

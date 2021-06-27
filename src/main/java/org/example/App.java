@@ -18,6 +18,7 @@ public class App
 
         //DataBase.sql("CREATE TABLE subscribers (chatid bigint UNIQUE, settings int);");
         //DataBase.sql("DELETE FROM subscribers");
+        //DataBase.addSubscriber(new Subscriber(1L));
 
 
         try {

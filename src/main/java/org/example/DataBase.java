@@ -31,6 +31,7 @@ public class DataBase {
                 subscribers.add(subscriber);
                 prepareStatement("INSERT INTO subscribers VALUES (" + subscriber.getChatID() + ", "
                         + subscriber.getParseGap() + ");");
+                System.out.println("Insert done");
             } else {
                 System.out.println("Already in subs");
             }
@@ -55,10 +56,11 @@ public class DataBase {
             while (resultSet.next()){
                 Subscriber sub = new Subscriber(resultSet.getLong(1), resultSet.getInt(2));
                 subscribers.add(sub);
+                System.out.println(sub.getChatID());
             }
 
             resultSet.close();
-            System.out.println("got subs from list");
+            System.out.println("Got all subs from list");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
