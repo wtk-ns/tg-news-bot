@@ -18,16 +18,25 @@ public class Parser {
     private final Calendar calendar = new GregorianCalendar();
 
 
-    public Parser(Calendar newsFrom) {
-        this.calendar.setTime(newsFrom.getTime());
 
-    }
 
     public List<SyndEntry> parse(String FEED) throws Exception{
         return this.printRss(createFeed(FEED));
     }
 
+    public static Parser makeParser(int amountOfHoursBefore){
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTimeZone(TimeZone.getTimeZone(Constants.timeZone));
+        calendar.add(Calendar.HOUR_OF_DAY, -amountOfHoursBefore);
+
+        return new Parser(calendar);
+    }
+
     //все private, что парсит и обрабатывает RSS
+    private Parser(Calendar newsFrom) {
+        this.calendar.setTime(newsFrom.getTime());
+
+    }
 
     private SyndFeed createFeed(String url) throws Exception
     {
