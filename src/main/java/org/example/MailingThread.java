@@ -1,7 +1,10 @@
 package org.example;
 
 
+import com.rometools.rome.feed.synd.SyndEntry;
+
 import java.time.LocalTime;
+import java.util.List;
 
 
 public class MailingThread implements Runnable{
@@ -19,33 +22,39 @@ public class MailingThread implements Runnable{
         while (true){
 
 
-            if (LocalTime.now(Constants.timeZone).getHour() == 8 && LocalTime.now(Constants.timeZone).getMinute() == 0 && LocalTime.now(Constants.timeZone).getSecond() == 0){
-                getNews(Constants.defaultAmountOfHoursForParse);
-            } else if (LocalTime.now(Constants.timeZone).getHour() == 14 && LocalTime.now(Constants.timeZone).getMinute() == 0 && LocalTime.now(Constants.timeZone).getSecond() == 0){
-                getNews(Constants.defaultAmountOfHoursForParse);
-            } else if (LocalTime.now(Constants.timeZone).getHour() == 20 && LocalTime.now(Constants.timeZone).getMinute() == 0 && LocalTime.now(Constants.timeZone).getSecond() == 0){
-                getNews(Constants.defaultAmountOfHoursForParse);
+
+
+            if (isNow(8,0)){
+                mailNews();
+            } else if (isNow(14,0)){
+                mailNews();
+            } else if (isNow(20,0)){
+                mailNews();
+            } else if (isNow(23,0) || isNow(11,0)){
+                DataBase.insertDailyNews();
             }
 
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(60000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
-                System.out.println("MailingThread");
+                System.out.println("Exc in mailing tread " + e.getMessage() + " " + e.getClass().getName());
             }
         }
 
     }
 
-    private void getNews(int ammountHours){
+    private Boolean isNow(int hour, int minute){
+        return (LocalTime.now(Constants.timeZone).getHour() == hour &&
+                LocalTime.now(Constants.timeZone).getMinute() == minute);
+    }
 
-        Parser parser = Parser.makeParser(-ammountHours);
 
+
+    private void mailNews(){
         try {
-            bot.mailingForAllSubs(parser.parse(Journals.VC.getRssUrl()));
+            bot.mailingForAllSubs(Parser.parse(Journals.VC.getRssUrl(), Constants.defaultAmountOfHoursForParse));
         } catch (Exception exception) {
-            exception.printStackTrace();
         }
     }
 

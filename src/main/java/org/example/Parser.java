@@ -20,28 +20,25 @@ public class Parser {
 
 
 
-    public List<SyndEntry> parse(String FEED) throws Exception{
-        return this.printRss(createFeed(FEED));
-    }
-
-    public static Parser makeParser(int amountOfHoursBefore){
+    public static List<SyndEntry> parse(String FEED, int amountOfHoursBefore) throws Exception{
         Calendar calendar = new GregorianCalendar();
         calendar.setTimeZone(TimeZone.getTimeZone(Constants.timeZone));
         calendar.add(Calendar.HOUR_OF_DAY, -amountOfHoursBefore);
 
-        return new Parser(calendar);
+        Parser parser = new Parser(calendar);
+
+        SyndFeed syndFeed = new SyndFeedInput().build(new XmlReader(new URL(FEED)));
+
+        return parser.printRss(syndFeed);
     }
 
-    //все private, что парсит и обрабатывает RSS
+
     private Parser(Calendar newsFrom) {
         this.calendar.setTime(newsFrom.getTime());
 
     }
 
-    private SyndFeed createFeed(String url) throws Exception
-    {
-        return new SyndFeedInput().build(new XmlReader(new URL(url)));
-    }
+
 
     private List<SyndEntry> printRss(SyndFeed feed){
         List<SyndEntry> list = new ArrayList<>();

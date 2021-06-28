@@ -16,8 +16,8 @@ public class App
         ApiContextInitializer.init();
         TelegramBotsApi api = new TelegramBotsApi();
 
-        //DataBase.sql("CREATE TABLE subscribers (chatid bigint UNIQUE, settings int);");
-        //DataBase.sql("DELETE FROM subscribers");
+        //DataBase.sql("CREATE TABLE news (resource varchar(10), publishedDate varchar(80), title varchar(200), link varchar(100) UNIQUE);");
+        //DataBase.sql("DELETE FROM news");
         //DataBase.addSubscriber(new Subscriber(1L));
 
 

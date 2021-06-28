@@ -1,8 +1,13 @@
 package org.example;
 
 
+import com.rometools.rome.feed.synd.SyndEntry;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -41,6 +46,7 @@ public class DataBase {
     }
 
     public static void deleteSubscriber(Subscriber subscriber){
+
         try {
             subscribers.remove(subscriber);
             createStatement().executeQuery("DELETE FROM subscribers WHERE chatid=" + subscriber.getChatID() + ";");
@@ -48,6 +54,75 @@ public class DataBase {
             makeExceptionInfo("Deleted", throwables);
         }
 
+    }
+
+    public static void insertDailyNews(){
+        try {
+            List<SyndEntry> list = Parser.parse(Journals.VC.getRssUrl(), Constants.defaultAmountOfHoursForParse);
+
+            Comparator<SyndEntry> comparator = (o1, o2) -> {
+                if (o1.getPublishedDate().after(o2.getPublishedDate()))
+                {
+                    return 1;
+                } else if (o1.getPublishedDate().before(o2.getPublishedDate())) {
+                    return -1;
+                } else return 0;
+
+            };
+            list.sort(comparator);
+
+
+            for (SyndEntry s : list){
+
+                try {
+                    PreparedStatement ps = prepareStatement("" +
+                            "INSERT INTO news VALUES ('VC','" + s.getPublishedDate() + "','" + s.getTitle() + "','" + s.getLink() + "');");
+                    ps.execute();
+                } catch (Exception e){
+
+                }
+            }
+
+            list = Parser.parse(Journals.TJ.getRssUrl(), Constants.defaultAmountOfHoursForParse);
+            list.sort(comparator);
+
+            for (SyndEntry s : list){
+                try {
+                    PreparedStatement ps = prepareStatement("" +
+                            "INSERT INTO news VALUES ('TJ','" + s.getPublishedDate() + "','" + s.getTitle() + "','" + s.getLink() + "');");
+                    ps.execute();
+                } catch (Exception e){
+
+
+                }
+            }
+
+            list = Parser.parse(Journals.KOD.getRssUrl(), Constants.defaultAmountOfHoursForParse);
+            list.sort(comparator);
+
+            for (SyndEntry s : list){
+                try {
+                    PreparedStatement ps = prepareStatement("" +
+                            "INSERT INTO news VALUES ('KOD','" + s.getPublishedDate() + "','" + s.getTitle() + "','" + s.getLink() + "');");
+                    ps.execute();
+                } catch (Exception e){
+
+
+                }
+            }
+
+            System.out.println("Inserting news Done");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } {
+
+        }
+
+    }
+
+    private static PreparedStatement prepareStatement(String sql) throws Exception{
+        return DriverManager.getConnection(Constants.getDBurl(), Constants.getPropertiesForDB()).prepareStatement(sql);
     }
 
     public static void getSubListFromBase(){
@@ -59,11 +134,10 @@ public class DataBase {
             while (resultSet.next()){
                 Subscriber sub = new Subscriber(resultSet.getLong(1), resultSet.getInt(2));
                 subscribers.add(sub);
-                System.out.println(sub.getChatID());
             }
 
             resultSet.close();
-            System.out.println("Got all subs from list");
+
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
