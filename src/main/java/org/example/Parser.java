@@ -8,11 +8,6 @@ import com.rometools.rome.io.XmlReader;
 import java.net.URL;
 import java.util.*;
 
-/*
-Один метод - parse(), который возвращает массив новостей
-Новости берет из RSS, которые позже указанного времени
- */
-
 public class Parser {
 
     private final Calendar calendar = new GregorianCalendar();
