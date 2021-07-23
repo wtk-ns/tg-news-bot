@@ -1,4 +1,7 @@
-package org.example;
+package io.wotkins.tgNewsBot.bot;
+
+import io.wotkins.tgNewsBot.sql.DataBase;
+import io.wotkins.tgNewsBot.utility.Constants;
 
 public class Subscriber {
 

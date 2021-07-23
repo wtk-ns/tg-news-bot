@@ -1,12 +1,15 @@
-package org.example;
+package io.wotkins.tgNewsBot.sql;
 
 
 import com.rometools.rome.feed.synd.SyndEntry;
+import io.wotkins.tgNewsBot.bot.Subscriber;
+import io.wotkins.tgNewsBot.utility.Constants;
+import io.wotkins.tgNewsBot.utility.Journals;
+import io.wotkins.tgNewsBot.utility.Parser;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 

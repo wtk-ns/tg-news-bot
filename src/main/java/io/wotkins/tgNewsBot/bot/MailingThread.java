@@ -1,10 +1,12 @@
-package org.example;
+package io.wotkins.tgNewsBot.bot;
 
 
-import com.rometools.rome.feed.synd.SyndEntry;
+import io.wotkins.tgNewsBot.sql.DataBase;
+import io.wotkins.tgNewsBot.utility.Constants;
+import io.wotkins.tgNewsBot.utility.Journals;
+import io.wotkins.tgNewsBot.utility.Parser;
 
 import java.time.LocalTime;
-import java.util.List;
 
 
 public class MailingThread implements Runnable{

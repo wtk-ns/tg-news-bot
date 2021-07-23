@@ -1,4 +1,4 @@
-package org.example;
+package io.wotkins.tgNewsBot.utility;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
@@ -37,7 +37,6 @@ public final class Constants {
         Properties properties = new Properties();
         properties.put("user",user);
         properties.put("password",password);
-
         return properties;
     }
 
@@ -45,25 +44,4 @@ public final class Constants {
 
 }
 
-enum Journals{
-    VC("VC", "https://vc.ru/rss"),
-    TJ("TJ", "https://journal.tinkoff.ru/feed/"),
-    KOD("KOD","https://kod.ru/rss/");
 
-    private final String name;
-    private final String rssUrl;
-
-    Journals(String name, String rssUrl){
-        this.name = name;
-        this.rssUrl = rssUrl;
-    }
-
-    public String getName(){
-        return name;
-    }
-
-    public String getRssUrl(){
-        return rssUrl;
-    }
-
-}

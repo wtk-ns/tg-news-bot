@@ -4,12 +4,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.example</groupId>
+  <groupId>org.wotkins</groupId>
   <artifactId>bot</artifactId>
   <version>2.0</version>
 
   <name>bot</name>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>14.0.2</maven.compiler.source>
@@ -18,14 +17,12 @@
 
 
   <dependencies>
-      <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
       <dependency>
           <groupId>org.junit.jupiter</groupId>
           <artifactId>junit-jupiter-api</artifactId>
           <version>5.7.0</version>
           <scope>test</scope>
       </dependency>
-
       <dependency>
       <groupId>org.telegram</groupId>
       <artifactId>telegrambots</artifactId>
@@ -46,7 +43,6 @@
       <artifactId>rome</artifactId>
       <version>1.15.0</version>
     </dependency>
-
   </dependencies>
 
     <build>
@@ -96,7 +92,7 @@
                         <appName>wotkins-bot</appName>
                         <jdkVersion>14.0.2</jdkVersion>
                         <processTypes>
-                            <worker>java $JAVA_OPTS -cp target/classes:target/dependency/* org.example.App</worker>
+                            <worker>java $JAVA_OPTS -cp target/classes:target/dependency/* io.wotkins.tgNewsBot.bot.App</worker>
                         </processTypes>
                     </configuration>
                 </plugin>
@@ -113,7 +109,5 @@
                 </configuration>
             </plugin>
         </plugins>
-
-
     </build>
 </project>

@@ -1,4 +1,4 @@
-package org.example;
+package io.wotkins.tgNewsBot.utility;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;

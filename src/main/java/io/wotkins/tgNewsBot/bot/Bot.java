@@ -1,13 +1,16 @@
-package org.example;
+package io.wotkins.tgNewsBot.bot;
 
 
 import com.rometools.rome.feed.synd.SyndEntry;
+import io.wotkins.tgNewsBot.sql.DataBase;
+import io.wotkins.tgNewsBot.utility.Parser;
+import io.wotkins.tgNewsBot.utility.Constants;
+import io.wotkins.tgNewsBot.utility.Journals;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -15,8 +18,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
-import java.text.SimpleDateFormat;
-import java.time.*;
 import java.util.*;
 
 public class Bot extends TelegramLongPollingBot {
@@ -26,7 +27,6 @@ public class Bot extends TelegramLongPollingBot {
     public Bot(){
         DataBase.getSubListFromBase();
         mailingThreadStart();
-
     }
 
 
@@ -123,7 +123,8 @@ public class Bot extends TelegramLongPollingBot {
                 }
                 break;
             default:
-                System.out.println("Error with callBackQuerry interpretation. handleCallback method " + this.getClass().getName());
+                System.out.println("Error with callBackQuerry interpretation. handleCallback method " +
+                        this.getClass().getName());
         }
     }
 
@@ -190,8 +191,8 @@ public class Bot extends TelegramLongPollingBot {
         if (list.size()!=0) {
 
             for (SyndEntry syndEntry : list) {
-                returnedString.append(Constants.dateFormat.format(syndEntry.getPublishedDate()) + "\n<b>" + syndEntry.getTitle() + "</b>\n" +
-                        "<a href=\"" + syndEntry.getLink() + "\">" + "в источник" + "</a>\n\n");
+                returnedString.append(Constants.dateFormat.format(syndEntry.getPublishedDate()) + "\n<b>" +
+                        syndEntry.getTitle() + "</b>\n" + "<a href=\"" + syndEntry.getLink() + "\">" + "в источник" + "</a>\n\n");
             }
         } else {
             returnedString.append("К сожалению, за последний настроенный промежуток новостей по этому ресурсу нет :(\n");
